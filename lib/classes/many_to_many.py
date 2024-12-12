@@ -1,106 +1,120 @@
 class Article:
-    all = [] 
+    all = []
 
-    def __init__(self, author, magazine, title):
-        self._author = author
-        self._magazine = magazine
-        self._title = title
-
-    
-        author.add_article(self)
-        magazine.add_article(self)
+    def __init__(self, author, magazine, title):  # Fixed the constructor name
+        self.author = author
+        self.magazine = magazine
+        self.title = title
         Article.all.append(self)
 
-    @property
-    def author(self):
-        return self._author
-
-    @property
-    def magazine(self):
-        return self._magazine
-
-    @property
-    def title(self):
+    def get_title(self):
         return self._title
 
-    def __str__(self):
-        return self.title
+    def set_title(self, new_title):
+        if hasattr(self, "_title"):
+            print("Title cannot be changed")
+        elif isinstance(new_title, str) and 5 <= len(new_title) <= 50:
+            self._title = new_title
+        else:
+            print("Title must be a string between 5 and 50 characters.")
+
+    title = property(get_title, set_title)
+
+    def get_author(self):
+        return self._author
+
+    def set_author(self, new_author):
+        if isinstance(new_author, Author):
+            self._author = new_author
+        else:
+            print("Author must be an instance of Author.")
+
+    author = property(get_author, set_author)
+
+    def get_magazine(self):
+        return self._magazine
+
+    def set_magazine(self, new_magazine):
+        if isinstance(new_magazine, Magazine):
+            self._magazine = new_magazine
+        else:
+            print("Magazine must be an instance of Magazine.")
+
+    magazine = property(get_magazine, set_magazine)
 
 
 class Author:
-    def __init__(self, name):
-        self._name = name
-        self._articles = []
+    def __init__(self, name):  # Fixed the constructor name
+        self.name = name
 
-    @property
-    def name(self):
+    def get_name(self):
         return self._name
 
-    def add_article(self, article):
-        """Add an article to the author's list if it isn't already present."""
-        if article not in self._articles:
-            self._articles.append(article)
+    def set_name(self, new_name):
+        if hasattr(self, "_name"):
+            print("Name cannot be changed")
+        elif isinstance(new_name, str) and len(new_name) > 0:
+            self._name = new_name
+        else:
+            print("Name must be a non-empty string.")
+
+    name = property(get_name, set_name)
 
     def articles(self):
-        """Return all articles written by the author."""
-        return self._articles
+        return [article for article in Article.all if article.author == self]
 
     def magazines(self):
-        """Return a list of unique magazines where the author has articles."""
-        return list(set(article.magazine for article in self._articles))
+        return list({article.magazine for article in self.articles()})
+
+    def add_article(self, magazine, title):
+        return Article(self, magazine, title)
 
     def topic_areas(self):
-        """Return a list of unique categories of magazines where the author has published."""
-        return list(set(article.magazine.category for article in self._articles))
-
-    def __str__(self):
-        return self._name
+        topic_areas = list({magazine.category for magazine in self.magazines()})
+        return topic_areas if topic_areas else None
 
 
 class Magazine:
-    def __init__(self, name, category):
-        if not isinstance(name, str) or not (2 <= len(name) <= 16):
-            raise ValueError("Name must be a string between 2 and 16 characters.")
-        if not isinstance(category, str) or len(category) == 0:
-            raise ValueError("Category must be a non-empty string.")
-        self._name = name
-        self._category = category
-        self._articles = []
+    def __init__(self, name, category):  # Fixed the constructor name
+        self.name = name
+        self.category = category
 
-    @property
-    def name(self):
+    def get_name(self):
         return self._name
 
-    @property
-    def category(self):
+    def set_name(self, new_name):
+        if isinstance(new_name, str) and 2 <= len(new_name) <= 16:
+            self._name = new_name
+        else:
+            print("Name must be a string between 2 and 16 characters.")
+
+    name = property(get_name, set_name)
+
+    def get_category(self):
         return self._category
 
-    def add_article(self, article):
-        """Add an article to the magazine's list if it isn't already present."""
-        if article not in self._articles:
-            self._articles.append(article)
+    def set_category(self, new_category):
+        if isinstance(new_category, str) and len(new_category) > 0:
+            self._category = new_category
+        else:
+            print("Category must be a non-empty string.")
+
+    category = property(get_category, set_category)
 
     def articles(self):
-        """Return all articles in this magazine."""
-        return self._articles
+        return [article for article in Article.all if article.magazine == self]
 
     def contributors(self):
-        """Return a list of unique authors who have contributed to the magazine."""
-        return list(set(article.author for article in self._articles))
+        return list({article.author for article in self.articles()})
 
     def article_titles(self):
-        """Return a list of titles of all articles in the magazine, or None if no articles exist."""
-        return [article.title for article in self._articles] if self._articles else None
+        titles = [article.title for article in self.articles()]
+        return titles if titles else None
 
     def contributing_authors(self):
-        """Return authors who have written more than 2 articles for the magazine."""
-        author_count = {}
-        for article in self._articles:
-            author_count[article.author] = author_count.get(article.author, 0) + 1
-        contributing_authors = [author for author, count in author_count.items() if count > 2]
-        return contributing_authors if contributing_authors else None
-
-    def __str__(self):
-        return self._name
-
-        
+        author_counts = {}
+        for article in self.articles():
+            author = article.author
+            author_counts[author] = author_counts.get(author, 0) + 1
+        contributing_authors = [author for author, count in author_counts.items() if count > 2]
+        return contributing_authors if contributing_authors else None  # Fixed the non-standard space
